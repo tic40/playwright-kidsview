@@ -4,8 +4,8 @@ on:
   push:
     branches: [ main ]
   schedule:
-    # daily 16:05 (JST) に実行
-    - cron: '5 16 * * 1-5'
+    # weekday 16:05 (JST)
+    - cron: '5 7 * * 1-5'
 jobs:
   test:
     timeout-minutes: 10
