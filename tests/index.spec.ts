@@ -1,42 +1,41 @@
 import { test, expect } from '@playwright/test';
+const {
+  SLACK_WEBHOOK_URL,
+  KIDS_VIEW_LOGIN_URL,
+  KIDS_VIEW_ID,
+  KIDS_VIEW_PW
+} = process.env
 
-async function sendToSlack(username, text) {
-  const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL as string;
-  const data = { text, username }
+async function sendToSlack(username: string, text: string, channel: string) {
+  const slackWebhookUrl = `${SLACK_WEBHOOK_URL}`
+  const data = { text, username, channel }
   const options = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   };
+
   try {
-    const response = await fetch(slackWebhookUrl, options);
-    if (response.ok) {
-      console.log('Message sent to Slack');
-    } else {
-      console.error('Error sending message to Slack:', await response.text());
-    }
+    await fetch(slackWebhookUrl, options);
   } catch (error) {
     console.error('Error sending message to Slack:', error);
   }
 }
 
 test('get enyori and notify slack', async ({ page }) => {
+  await page.goto(`${KIDS_VIEW_LOGIN_URL}`);
 
-  await page.goto(process.env.KIDS_VIEW_LOGIN_URL as string);
   // login
-  const id = await page.$('input[name="txtID"]')
-  await id?.type(process.env.KIDS_VIEW_ID as string);
-  const pw = await page.$('input[name="txtPASS"]')
-  await pw?.type(process.env.KIDS_VIEW_ID as string);
-  await page.getByRole("button", { name: "ログイン" }).click();
+  await page.locator('#txtID').fill(`${KIDS_VIEW_ID}`);
+  await page.locator('#txtPASS').fill(`${KIDS_VIEW_PW}`);
+  await page.locator('#cmdLOGIN02').click();
+  const title = await page.locator('#lblEN_NAME');
+  await expect(title).toBeVisible();
 
   // move to 園より
   await page.locator('#grdMENU_ctl02_lnk02').click();
-  const res = await page.locator('#pnlENJINOYOUSU');
-  await expect(res).toBeVisible();
-
-  // debug: 前日
-  await page.locator('#cmdBEFORE').click();
+  const title_en = await page.locator('#pnlENJINOYOUSU');
+  await expect(title_en).toBeVisible();
 
   const scraypeMessageEnyori = async () => {
     const ELM_MAP = {
@@ -58,5 +57,5 @@ test('get enyori and notify slack', async ({ page }) => {
 
   const messages = await scraypeMessageEnyori()
   const date = await page.locator('#lblDATE').allInnerTexts();
-  await sendToSlack(`${date} 園より`, messages.join('\n'));
+  await sendToSlack(`${date} 保育園より`, messages.join('\n'), '#保育園');
 });
