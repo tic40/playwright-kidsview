@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 const {
   SLACK_WEBHOOK_URL,
   KIDS_VIEW_LOGIN_URL,
@@ -13,34 +13,34 @@ async function sendToSlack(username: string, text: string, channel: string) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
-  };
+  }
 
   try {
-    await fetch(slackWebhookUrl, options);
+    await fetch(slackWebhookUrl, options)
   } catch (error) {
-    console.error('Error sending message to Slack:', error);
+    console.error('Error sending message to Slack:', error)
   }
 }
 
 test('Get message from home and send slack', async ({ page }) => {
-  await page.goto(`${KIDS_VIEW_LOGIN_URL}`);
+  await page.goto(`${KIDS_VIEW_LOGIN_URL}`)
 
   // login
-  await page.locator('#txtID').fill(`${KIDS_VIEW_ID}`);
-  await page.locator('#txtPASS').fill(`${KIDS_VIEW_PW}`);
-  await page.locator('#cmdLOGIN02').click();
-  const title = await page.locator('#lblEN_NAME');
-  await expect(title).toBeVisible();
+  await page.locator('#txtID').fill(`${KIDS_VIEW_ID}`)
+  await page.locator('#txtPASS').fill(`${KIDS_VIEW_PW}`)
+  await page.locator('#cmdLOGIN02').click()
+  const title = await page.locator('#lblEN_NAME')
+  await expect(title).toBeVisible()
 
   // move to 家庭より
-  await page.locator('#grdMENU_ctl02_pnl_naka03').click();
-  const panel = await page.locator('#pnlKATEINOYOUSU');
-  await expect(panel).toBeVisible();
+  await page.locator('#grdMENU_ctl02_pnl_naka03').click()
+  const panel = await page.locator('#pnlKATEINOYOUSU')
+  await expect(panel).toBeVisible()
 
   // 前日に移動
-  // await page.locator('#cmdBEFORE').click();
-  // const a = await page.locator('#pnlKATEINOYOUSU');
-  // await expect(a).toBeVisible();
+  // await page.locator('#cmdBEFORE').click()
+  // const a = await page.locator('#pnlKATEINOYOUSU')
+  // await expect(a).toBeVisible()
 
   const scraypeMessage = async () => {
     const getSelectedValue = async (id: string) => {
@@ -53,7 +53,7 @@ test('Get message from home and send slack', async ({ page }) => {
     const sleep21 = await getSelectedValue('#ddlSLEEP21')
     const sleep22 = await getSelectedValue('#ddlSLEEP22')
     const medicine = await getSelectedValue('#grdFREE_ctl02_ddlNAIYO')
-    const comment = await page.$eval('#txtCOMMENT', v => v.value);
+    const comment = await page.$eval('#txtCOMMENT', v => v.value)
 
     if (!temp1) {
       return ['今日の家庭からの入力がまだだよ']
@@ -68,28 +68,28 @@ test('Get message from home and send slack', async ({ page }) => {
   }
 
   const messages = await scraypeMessage()
-  const date = await page.locator('#lblDATE').allInnerTexts();
+  const date = await page.locator('#lblDATE').allInnerTexts()
   await sendToSlack(
     `${date} 家庭より`,
     `\`\`\`${messages.join('\n')}\`\`\``,
     '#保育園'
-  );
+  )
 })
 
 test('Get message from nursery and send slack', async ({ page }) => {
-  await page.goto(`${KIDS_VIEW_LOGIN_URL}`);
+  await page.goto(`${KIDS_VIEW_LOGIN_URL}`)
 
   // login
-  await page.locator('#txtID').fill(`${KIDS_VIEW_ID}`);
-  await page.locator('#txtPASS').fill(`${KIDS_VIEW_PW}`);
-  await page.locator('#cmdLOGIN02').click();
-  const title = await page.locator('#lblEN_NAME');
-  await expect(title).toBeVisible();
+  await page.locator('#txtID').fill(`${KIDS_VIEW_ID}`)
+  await page.locator('#txtPASS').fill(`${KIDS_VIEW_PW}`)
+  await page.locator('#cmdLOGIN02').click()
+  const title = await page.locator('#lblEN_NAME')
+  await expect(title).toBeVisible()
 
   // move to 園より
-  await page.locator('#grdMENU_ctl02_lnk02').click();
-  const panel = await page.locator('#pnlENJINOYOUSU');
-  await expect(panel).toBeVisible();
+  await page.locator('#grdMENU_ctl02_lnk02').click()
+  const panel = await page.locator('#pnlENJINOYOUSU')
+  await expect(panel).toBeVisible()
 
   const scraypeMessage = async () => {
     const ELM_MAP = {
@@ -103,17 +103,17 @@ test('Get message from nursery and send slack', async ({ page }) => {
     }
     let res: string[] = []
     for(const [k,v] of Object.entries(ELM_MAP)) {
-      const txt = await page.locator(v).allInnerTexts();
+      const txt = await page.locator(v).allInnerTexts()
       res.push(`${k}: ${txt.join()}`)
     }
     return res
   }
 
   const messages = await scraypeMessage()
-  const date = await page.locator('#lblDATE').allInnerTexts();
+  const date = await page.locator('#lblDATE').allInnerTexts()
   await sendToSlack(
     `${date} 保育園より`,
     `\`\`\`${messages.join('\n')}\`\`\``,
     '#保育園'
-  );
-});
+  )
+})
