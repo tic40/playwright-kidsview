@@ -39,7 +39,7 @@ test('get enyori and notify slack', async ({ page }) => {
 
   const scraypeMessageEnyori = async () => {
     const ELM_MAP = {
-      '記入者': '#lblSTAFF_NAME',
+      '記入': '#lblSTAFF_NAME',
       '体温': '#lblTEMPERATURE1',
       '睡眠': '#lblGOSUI',
       '機嫌': '#lblMOOD',
