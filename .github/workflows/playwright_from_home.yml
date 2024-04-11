@@ -1,11 +1,11 @@
-name: Playwright exec
+name: Playwright from home
 on:
   workflow_dispatch:
   push:
     branches: [ main ]
   schedule:
-    # weekday 16:05 (JST)
-    - cron: '5 7 * * 1-5'
+    # weekday 08:30 (JST)
+    - cron: '0 23 * * 0-4'
 jobs:
   test:
     timeout-minutes: 10
@@ -26,4 +26,4 @@ jobs:
         KIDS_VIEW_LOGIN_URL: ${{ secrets.KIDS_VIEW_LOGIN_URL }}
         KIDS_VIEW_PW: ${{ secrets.KIDS_VIEW_PW }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      run: pnpm exec playwright test
+      run: pnpm playwright test -g 'Get message from home and send slack'
