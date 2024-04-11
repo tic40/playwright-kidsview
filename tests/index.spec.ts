@@ -29,12 +29,12 @@ test('Get message from home and send slack', async ({ page }) => {
   await page.locator('#txtID').fill(`${KIDS_VIEW_ID}`)
   await page.locator('#txtPASS').fill(`${KIDS_VIEW_PW}`)
   await page.locator('#cmdLOGIN02').click()
-  const title = await page.locator('#lblEN_NAME')
+  const title = page.locator('#lblEN_NAME')
   await expect(title).toBeVisible()
 
   // move to 家庭より
   await page.locator('#grdMENU_ctl02_pnl_naka03').click()
-  const panel = await page.locator('#pnlKATEINOYOUSU')
+  const panel = page.locator('#pnlKATEINOYOUSU')
   await expect(panel).toBeVisible()
 
   // 前日に移動
@@ -56,7 +56,7 @@ test('Get message from home and send slack', async ({ page }) => {
     const comment = await page.$eval('#txtCOMMENT', v => v.value)
 
     if (!temp1) {
-      return ['今日の家庭からの入力がまだだよ']
+      return []
     } else {
       return [
         `体温: ${temp1}.${temp2}度`,
@@ -69,11 +69,11 @@ test('Get message from home and send slack', async ({ page }) => {
 
   const messages = await scraypeMessage()
   const date = await page.locator('#lblDATE').allInnerTexts()
-  await sendToSlack(
-    `${date} 家庭より`,
-    `\`\`\`${messages.join('\n')}\`\`\``,
-    '#保育園'
-  )
+  const formatttedMessage = messages.length === 0 ?
+    '<!channel> 今日の家庭からの入力がまだだよ'
+    : `\`\`\`${messages.join('\n')}\`\`\``
+
+  await sendToSlack(`${date} 家庭より`, formatttedMessage, '#保育園')
 })
 
 test('Get message from nursery and send slack', async ({ page }) => {
@@ -83,12 +83,12 @@ test('Get message from nursery and send slack', async ({ page }) => {
   await page.locator('#txtID').fill(`${KIDS_VIEW_ID}`)
   await page.locator('#txtPASS').fill(`${KIDS_VIEW_PW}`)
   await page.locator('#cmdLOGIN02').click()
-  const title = await page.locator('#lblEN_NAME')
+  const title = page.locator('#lblEN_NAME')
   await expect(title).toBeVisible()
 
   // move to 園より
   await page.locator('#grdMENU_ctl02_lnk02').click()
-  const panel = await page.locator('#pnlENJINOYOUSU')
+  const panel = page.locator('#pnlENJINOYOUSU')
   await expect(panel).toBeVisible()
 
   const scraypeMessage = async () => {
