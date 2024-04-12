@@ -1,8 +1,8 @@
 name: Playwright from nursery
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
+  # push:
+  #   branches: [ main ]
   schedule:
     # weekday 16:05 (JST)
     - cron: '5 7 * * 1-5'
