@@ -16,7 +16,7 @@ function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
-async function createDiaryEntryInNotion(content: string) {
+async function createDiaryEntryInNotion(messageFromHome: string, messageFromNursery: string) {
   const payload = {
     parent: { database_id: NOTION_DATABASE_ID },
     properties: {
@@ -57,23 +57,29 @@ async function createDiaryEntryInNotion(content: string) {
         }
       },
       {
-        type: 'heading_3',
-        heading_3: {
-          rich_text: [
-            { text: { content: '保育園より' } }
-          ]
-        }
-      },
-      {
         object: 'block',
         type: 'paragraph',
         paragraph: {
           rich_text: [
             {
               type: 'text',
-              text: { content: content }
-            }
-          ]
+              text: { content: '\n[家庭より]\n' }
+              // annotations: { bold: true }
+            },
+            {
+              type: 'text',
+              text: { content: messageFromHome }
+            },
+            {
+              type: 'text',
+              text: { content: '\n[保育園より]\n' }
+              // annotations: { bold: true }
+            },
+            {
+              type: 'text',
+              text: { content: messageFromNursery }
+            },
+          ],
         }
       }
     ]
@@ -112,7 +118,7 @@ async function sendToSlack(username: string, text: string, channel: string) {
   }
 }
 
-test('Get message from home and send slack', async ({ page }) => {
+async function getMessageFromHome(page) {
   await page.goto(`${KIDS_VIEW_LOGIN_URL}`)
 
   // login
@@ -132,41 +138,31 @@ test('Get message from home and send slack', async ({ page }) => {
   // const a = await page.locator('#pnlKATEINOYOUSU')
   // await expect(a).toBeVisible()
 
-  const scraypeMessage = async () => {
-    const getSelectedValue = async (id: string) => {
-      return await page.$eval(id, v => v.options[v.options.selectedIndex].textContent)
-    }
-    const temp1 = await getSelectedValue('#ddlTEMPERATURE1')
-    const temp2 = await getSelectedValue('#ddlTEMPERATURE2')
-    const sleep11 = await getSelectedValue('#ddlSLEEP11')
-    const sleep12 = await getSelectedValue('#ddlSLEEP12')
-    const sleep21 = await getSelectedValue('#ddlSLEEP21')
-    const sleep22 = await getSelectedValue('#ddlSLEEP22')
-    const medicine = await getSelectedValue('#grdFREE_ctl02_ddlNAIYO')
-    const comment = await page.$eval('#txtCOMMENT', v => v.value)
-
-    if (!temp1) {
-      return []
-    } else {
-      return [
-        `体温: ${temp1}.${temp2}度`,
-        `睡眠: ${sleep11}:${sleep12} 〜 ${sleep21}:${sleep22}`,
-        `お薬: ${medicine}`,
-        `コメント: ${comment}`
-      ]
-    }
+  const getSelectedValue = async (id: string) => {
+    return await page.$eval(id, v => v.options[v.options.selectedIndex].textContent)
   }
+  const temp1 = await getSelectedValue('#ddlTEMPERATURE1')
+  const temp2 = await getSelectedValue('#ddlTEMPERATURE2')
+  const sleep11 = await getSelectedValue('#ddlSLEEP11')
+  const sleep12 = await getSelectedValue('#ddlSLEEP12')
+  const sleep21 = await getSelectedValue('#ddlSLEEP21')
+  const sleep22 = await getSelectedValue('#ddlSLEEP22')
+  const medicine = await getSelectedValue('#grdFREE_ctl02_ddlNAIYO')
+  const comment = await page.$eval('#txtCOMMENT', v => v.value)
 
-  const messages = await scraypeMessage()
-  const date = await page.locator('#lblDATE').allInnerTexts()
-  const formatttedMessage = messages.length === 0 ?
-    '<!channel> 今日の家庭からの入力がまだだよ'
-    : `\`\`\`${messages.join('\n')}\`\`\``
+  if (!temp1) {
+    return []
+  } else {
+    return [
+      `体温: ${temp1}.${temp2}度`,
+      `睡眠: ${sleep11}:${sleep12} 〜 ${sleep21}:${sleep22}`,
+      `お薬: ${medicine}`,
+      `コメント: ${comment}`
+    ]
+  }
+}
 
-  await sendToSlack(`${date} 家庭より`, formatttedMessage, '#保育園')
-})
-
-test('Get message from nursery and send slack', async ({ page }) => {
+async function getMessageFromNursery (page) {
   await page.goto(`${KIDS_VIEW_LOGIN_URL}`)
 
   // login
@@ -181,25 +177,34 @@ test('Get message from nursery and send slack', async ({ page }) => {
   const panel = page.locator('#pnlENJINOYOUSU')
   await expect(panel).toBeVisible()
 
-  const scraypeMessage = async () => {
-    const ELM_MAP = {
-      '記入': '#lblSTAFF_NAME',
-      '体温': '#lblTEMPERATURE1',
-      '睡眠': '#lblGOSUI',
-      '機嫌': '#lblMOOD',
-      '食事': '#lblMEAL',
-      '排泄': '#lblEXCRETION1',
-      'コメント': '#lblCOMMENT'
-    }
-    let res: string[] = []
-    for(const [k,v] of Object.entries(ELM_MAP)) {
-      const txt = await page.locator(v).allInnerTexts()
-      res.push(`${k}: ${txt.join()}`)
-    }
-    return res
+  const ELM_MAP = {
+    '記入': '#lblSTAFF_NAME',
+    '体温': '#lblTEMPERATURE1',
+    '睡眠': '#lblGOSUI',
+    '機嫌': '#lblMOOD',
+    '食事': '#lblMEAL',
+    '排泄': '#lblEXCRETION1',
+    'コメント': '#lblCOMMENT'
   }
+  let res: string[] = []
+  for(const [k,v] of Object.entries(ELM_MAP)) {
+    const txt = await page.locator(v).allInnerTexts()
+    res.push(`${k}: ${txt.join()}`)
+  }
+  return res
+}
 
-  const messages = await scraypeMessage()
+test('Get message from home and send slack', async ({ page }) => {
+  const messages = await getMessageFromHome(page)
+  const date = await page.locator('#lblDATE').allInnerTexts()
+  const formatttedMessage = messages.length === 0 ?
+    '<!channel> 今日の家庭からの入力がまだだよ'
+    : `\`\`\`${messages.join('\n')}\`\`\``
+  await sendToSlack(`${date} 家庭より`, formatttedMessage, '#保育園')
+})
+
+test('Get message from nursery and send slack', async ({ page }) => {
+  const messages = await getMessageFromNursery(page)
   const date = await page.locator('#lblDATE').allInnerTexts()
   await sendToSlack(
     `${date} 保育園より`,
@@ -207,5 +212,5 @@ test('Get message from nursery and send slack', async ({ page }) => {
     '#保育園'
   )
 
-  await createDiaryEntryInNotion(messages.join('\n'))
+  await createDiaryEntryInNotion((await getMessageFromHome(page)).join('\n'), messages.join('\n'))
 })
