@@ -22,7 +22,7 @@ async function createDiaryEntryInNotion(content: string) {
     properties: {
       Name: {
         title: [
-          { text: { content: getCurrentDate(), }, },
+          { text: { content: '日記', }, },
         ],
       },
       Date: {
@@ -51,6 +51,14 @@ async function createDiaryEntryInNotion(content: string) {
       {
         type: 'heading_2',
         heading_2: {
+          rich_text: [
+            { text: { content: 'いろは' } }
+          ]
+        }
+      },
+      {
+        type: 'heading_3',
+        heading_3: {
           rich_text: [
             { text: { content: '保育園より' } }
           ]
