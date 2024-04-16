@@ -3,8 +3,90 @@ const {
   SLACK_WEBHOOK_URL,
   KIDS_VIEW_LOGIN_URL,
   KIDS_VIEW_ID,
-  KIDS_VIEW_PW
+  KIDS_VIEW_PW,
+  NOTION_DATABASE_ID,
+  NOTION_INTEGRATION_TOKEN
 } = process.env
+
+function getCurrentDate() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+async function createDiaryEntryInNotion(content: string) {
+  const payload = {
+    parent: { database_id: NOTION_DATABASE_ID },
+    properties: {
+      Name: {
+        title: [
+          { text: { content: getCurrentDate(), }, },
+        ],
+      },
+      Date: {
+        type: 'date',
+        date: { start: getCurrentDate() },
+      },
+    },
+    // diary template
+    children: [
+      {
+        type: 'heading_2',
+        heading_2: {
+          rich_text: [
+            { text: { content: 'あきこ' } }
+          ]
+        }
+      },
+      {
+        type: 'heading_2',
+        heading_2: {
+          rich_text: [
+            { text: { content: 'たいし' } }
+          ]
+        }
+      },
+      {
+        type: 'heading_2',
+        heading_2: {
+          rich_text: [
+            { text: { content: '保育園より' } }
+          ]
+        }
+      },
+      {
+        object: 'block',
+        type: 'paragraph',
+        paragraph: {
+          rich_text: [
+            {
+              type: 'text',
+              text: { content: content }
+            }
+          ]
+        }
+      }
+    ]
+  }
+
+  const headers = {
+    'Authorization': `Bearer ${NOTION_INTEGRATION_TOKEN}`,
+    'Content-Type': 'application/json',
+    'Notion-Version': '2022-06-28',
+  }
+
+  const response = await fetch('https://api.notion.com/v1/pages', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) throw new Error(`Failed to create diary entry: ${response.statusText}`)
+  const data = await response.json()
+  console.log('Diary entry created:', data)
+}
 
 async function sendToSlack(username: string, text: string, channel: string) {
   const slackWebhookUrl = `${SLACK_WEBHOOK_URL}`
@@ -116,4 +198,6 @@ test('Get message from nursery and send slack', async ({ page }) => {
     `\`\`\`${messages.join('\n')}\`\`\``,
     '#保育園'
   )
+
+  await createDiaryEntryInNotion(messages.join('\n'))
 })
