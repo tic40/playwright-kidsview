@@ -26,4 +26,6 @@ jobs:
         KIDS_VIEW_LOGIN_URL: ${{ secrets.KIDS_VIEW_LOGIN_URL }}
         KIDS_VIEW_PW: ${{ secrets.KIDS_VIEW_PW }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        NOTION_INTEGRATION_TOKEN: ${{ secrets.NOTION_INTEGRATION_TOKEN }}
       run: pnpm playwright test -g 'Get message from nursery and send slack'
