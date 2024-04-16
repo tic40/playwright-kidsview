@@ -17,7 +17,7 @@ jobs:
       with:
         node-version: 20
     - name: Install dependencies
-      run: npm install -g pnpm && pnpm install
+      run: npm install -g pnpm@latest && pnpm install
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
     - name: Run Playwright tests
@@ -26,4 +26,6 @@ jobs:
         KIDS_VIEW_LOGIN_URL: ${{ secrets.KIDS_VIEW_LOGIN_URL }}
         KIDS_VIEW_PW: ${{ secrets.KIDS_VIEW_PW }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        NOTION_INTEGRATION_TOKEN: ${{ secrets.NOTION_INTEGRATION_TOKEN }}
       run: pnpm playwright test -g 'Get message from home and send slack'
