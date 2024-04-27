@@ -72,7 +72,7 @@ async function createDiaryEntryInNotion(messageFromHome: string, messageFromNurs
             },
             {
               type: 'text',
-              text: { content: '\n[保育園より]\n' }
+              text: { content: '\n\n[保育園より]\n' }
               // annotations: { bold: true }
             },
             {
@@ -177,19 +177,25 @@ async function getMessageFromNursery (page) {
   const panel = page.locator('#pnlENJINOYOUSU')
   await expect(panel).toBeVisible()
 
+  // 前日に移動
+  // await page.locator('#cmdBEFORE').click()
+  // const a = await page.locator('#pnlENJINOYOUSU')
+  // await expect(a).toBeVisible()
+
   const ELM_MAP = {
-    '記入': '#lblSTAFF_NAME',
-    '体温': '#lblTEMPERATURE1',
-    '睡眠': '#lblGOSUI',
-    '機嫌': '#lblMOOD',
-    '食事': '#lblMEAL',
-    '排泄': '#lblEXCRETION1',
-    'コメント': '#lblCOMMENT'
+    '記入': ['#lblSTAFF_NAME'],
+    '体温': ['#lblTEMPERATURE1', '#lblTEMPERATURE2', '#lblTEMPERATURE3', '#lblTEMPERATURE4', '#lblTEMPERATURE5'],
+    '睡眠': ['#lblGOSUI'],
+    '機嫌': ['#lblMOOD'],
+    '食事': ['#lblMEAL'],
+    '排泄': ['#lblEXCRETION1', '#lblEXCRETION2', '#lblEXCRETION3', '#lblEXCRETION4', '#lblEXCRETION5'],
+    'コメント': ['#lblCOMMENT']
   }
   let res: string[] = []
   for(const [k,v] of Object.entries(ELM_MAP)) {
-    const txt = await page.locator(v).allInnerTexts()
-    res.push(`${k}: ${txt.join()}`)
+    const txt: string[] = []
+    for(const id of v) txt.push((await page.locator(id).allInnerTexts()).join().trim())
+    res.push(`${k}: ${txt.filter(Boolean).join(', ')}`)
   }
   return res
 }
@@ -206,11 +212,8 @@ test('Get message from home and send slack', async ({ page }) => {
 test('Get message from nursery and send slack', async ({ page }) => {
   const messages = await getMessageFromNursery(page)
   const date = await page.locator('#lblDATE').allInnerTexts()
-  await sendToSlack(
-    `${date} 保育園より`,
-    `\`\`\`${messages.join('\n')}\`\`\``,
-    '#保育園'
-  )
+  const formatttedMessage = `\`\`\`${messages.join('\n')}\`\`\``
+  await sendToSlack(`${date} 保育園より`, formatttedMessage, '#保育園')
 
   await createDiaryEntryInNotion((await getMessageFromHome(page)).join('\n'), messages.join('\n'))
 })
