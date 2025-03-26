@@ -4,8 +4,8 @@ on:
   # push:
   #   branches: [ main ]
   schedule:
-    # weekday 16:05 (JST)
-    - cron: '5 7 * * 1-5'
+    # weekday 16:30 (JST)
+    - cron: '30 7 * * 1-5'
 jobs:
   test:
     timeout-minutes: 10
