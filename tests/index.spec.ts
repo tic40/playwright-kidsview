@@ -129,7 +129,8 @@ async function getMessageFromHome(page) {
   await expect(title).toBeVisible()
 
   // move to 家庭より
-  await page.locator('#grdMENU_ctl02_pnl_naka03').click()
+  await page.locator('#grdMENU_ctl03_lnk01').click()
+
   const panel = page.locator('#pnlKATEINOYOUSU')
   await expect(panel).toBeVisible()
 
@@ -171,9 +172,8 @@ async function getMessageFromNursery (page) {
   await page.locator('#cmdLOGIN02').click()
   const title = page.locator('#lblEN_NAME')
   await expect(title).toBeVisible()
-
   // move to 園より
-  await page.locator('#grdMENU_ctl02_lnk02').click()
+  await page.locator('#grdMENU_ctl02_lnk03').click()
   const panel = page.locator('#pnlENJINOYOUSU')
   await expect(panel).toBeVisible()
 
