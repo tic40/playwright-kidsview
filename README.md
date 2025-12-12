@@ -30,3 +30,13 @@ And check out the following files:
 
 Visit https://playwright.dev/docs/intro for more information. ✨
 ```
+
+## Run workflow locally with act
+
+```bash
+brew install act
+
+# create .secrets
+
+act workflow_dispatch -W .github/workflows/playwright_from_nursery.yml -P self-hosted=-self-hosted --secret-file .secrets
+```
