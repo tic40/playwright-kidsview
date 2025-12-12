@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "act_nursery": "act workflow_dispatch -W .github/workflows/playwright_from_nursery.yml -P self-hosted=-self-hosted --secret-file .secrets",
+    "act_home": "act workflow_dispatch -W .github/workflows/playwright_from_home.yml -P self-hosted=-self-hosted --secret-file .secrets"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.43.1",
-    "@types/node": "^20.12.7"
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.1"
   }
 }

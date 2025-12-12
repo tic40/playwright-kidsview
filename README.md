@@ -38,5 +38,6 @@ brew install act
 
 # create .secrets
 
-act workflow_dispatch -W .github/workflows/playwright_from_nursery.yml -P self-hosted=-self-hosted --secret-file .secrets
+pnpm act_nursery  # Run nursery workflow
+pnpm act_home     # Run home workflow
 ```
